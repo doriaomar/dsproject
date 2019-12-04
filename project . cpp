@@ -1,0 +1,226 @@
+#include "QueueDS.h"
+#include <iostream>
+#include <string>
+#include <assert.h>
+using namespace std;
+
+Node ::Node()
+{
+	Name = " " ;
+	next = 0;
+	priority = 0;
+}
+Node::Node(string val)
+{
+   Name = val;
+	next = 0;
+	priority = 0;
+}
+
+LinkedList ::LinkedList()
+{
+	head = tail = 0;
+	count = 0;
+}
+int LinkedList  ::Length()
+{
+	return count;
+}
+void LinkedList ::ReadData() {
+	int Choice;
+	int P;
+	string Task_Name;
+	do {
+			cout << "Please Enter Task Name : "; cin >> Task_Name;
+			cout << "Please Enter Task's Priority : "; cin >> P;
+			if (P >= 1 && P <= 10) { // zabti el else    to enter per again 
+				//count++;
+				Append(Task_Name, P);
+			}
+			cout << "press 1 if you finish : ";
+			cin >> Choice;
+		
+	} while (Choice !=1);
+}
+void LinkedList  ::Append( string val , int prio)
+{
+	Node * newNode = new Node ;
+	newNode->Name = val;
+	newNode->priority = prio;
+	if (head == 0)
+		head = tail = newNode;
+	else
+	{
+		tail->next = newNode;
+		tail = newNode;	
+	}
+	count ++ ;
+	sort();
+}
+void LinkedList::sort(){
+	Node *NodeTmp = head;
+	Node * NextNode = NodeTmp->next;
+	while (NodeTmp->next != 0) {
+		//swap(TEMPNEXT, TEMP);
+			while (NextNode !=0) {
+				if (NodeTmp->priority < NextNode->priority) {
+					Node * Swap = new Node;
+					Swap->Name = NodeTmp->Name;
+					Swap->priority = NodeTmp->priority;
+					NodeTmp->Name = NextNode->Name;
+					NodeTmp->priority = NextNode->priority;
+					NextNode->priority = Swap->priority;
+					NextNode->Name = Swap->Name;
+					NextNode =NextNode->next; // han5ly temp sabta w n7rk TEMPNEXT f hanb2a b n check var wa7d m3 ba2i l variables */
+				}	
+				else {
+					NextNode = NextNode->next;
+				}
+			}
+			NodeTmp = NodeTmp->next;
+			NextNode = NodeTmp->next;	
+	}
+}
+void LinkedList::Display ()
+{
+	Node * tmp = head;
+	cout << " Priority :             Task Name : " << endl;
+	for (int i = 0; i < count; i++) {
+		cout << "   " << tmp->priority << "                       " << tmp->Name << endl;
+		tmp = tmp->next;
+	}
+}
+void LinkedList::Update()
+{
+	assert(count != 0);
+	Node* temp = head;
+	head = head->next;
+	delete temp;
+	count--;
+	cout << "Your New Taskes " << endl;
+	Display();
+	cout << "Good Mother" << endl;
+	if (head != 0) {
+		cout << " your next Task  : " << endl;
+		cout << head->Name << endl;
+	}
+	else {
+		Empty();
+	}
+ }
+void LinkedList::Empty()
+{
+	if (count == 0)
+		cout << "All Tasks is Done" << endl;
+}
+
+void LinkedList::Edit() {
+	
+	Node * edit = head;
+	cout << "Enter your OLd task's name ";
+	string OldName;
+	cin >> OldName;
+
+//Node * NewNode = new Node;
+	while (edit !=0) {
+	if (edit->Name != OldName) {
+		edit = edit->next;
+	}
+	else
+	{
+		int EditChoice;
+		cout << "Press 1 To Edit Name" << endl; 
+
+		cout << "Press 2 To Edit Priorty " << endl;
+		cout << "Press 3 To Edit Priorty and Name" << endl;
+		cin >> EditChoice;
+		string NName;
+		int prioo;
+		if (EditChoice == 1) {
+			cout << "enter your new name : ";
+			cin >> NName;
+			edit->Name = NName;
+			break;
+		}
+		else if (EditChoice == 2) {
+			cout << "enter your new priority : ";
+			cin >> prioo;
+			edit->priority = prioo;
+			break;
+		}
+		else if (EditChoice == 3) {
+			cout << "enter your new priority  : ";
+			cin >> prioo;
+			edit->priority = prioo;
+			cout << "enter your new name : ";
+			cin >> NName;
+			edit->Name = NName;
+			break;
+		}
+		else
+		{
+			cout << " invaled choice" << endl;
+
+		}
+	}	
+}
+sort();
+}
+Mothers::Mothers() {
+	UserName = "";
+	Password = "";
+}
+/*void LinkedList::option()
+{
+	Node *ptr = head;
+	cout << "enter task you want move" << endl;
+	string valuemove;
+	cin >> valuemove;
+	while (ptr->value != valuemove){
+		ptr = ptr->next;
+	break;
+}
+	//Node* tempvalue = new node(ptr->value);
+
+
+	Append(value,preority);
+
+
+}*/
+/*	}
+	//else
+	{
+		for (int i = 0; i < pos - 1; i++)
+			tmp = tmp->next;
+		Node<T>* del = tmp->next;
+		tmp->next = del->next;
+		delete del;
+		if (pos == count - 1)
+			tail = tmp;
+	}
+	count--;
+}*/
+
+/*template <class T>
+void LinkedList<T>::clear()
+{
+	if (count == 0)
+		return;
+	Node<T>* tmp = head->next;
+	while (tmp->next != 0)
+	{
+		delete head;
+		head = tmp;
+		tmp = tmp->next;
+	}
+
+	delete head;
+	head = tail = 0;
+	count = 0;
+}
+*/
+/*template <class T>
+LinkedList<T>::~LinkedList(void)
+{
+	clear();
+}*/
