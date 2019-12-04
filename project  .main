@@ -1,0 +1,47 @@
+#include <iostream>
+#include <string>
+#include "QueueDS.h"
+#include <vector>
+using namespace std;
+
+int main()
+
+{
+	vector <Mothers > V;
+	LinkedList  L;
+	int choise;
+	Mothers M;
+	
+	int num=0;
+	
+	L.ReadData();
+	L.Display();
+
+	do {
+		cout << "if you finish your task press 1 " << endl;
+		cout << " press 2 to display your List " << endl;
+		cout << " press 3 To  Edit " << endl;
+		cout << " press 0 to stop " << endl;
+		cin >> choise;
+		switch (choise)
+		{
+		case 1:
+			L.Update();
+			break;
+		case 2:
+			L.Display();
+			break;
+		case 3 :
+			L.Edit();
+			break;
+		default:
+			break;
+		}
+	} while (choise != 0);
+	
+	//L.option();
+	L.Display();
+	
+	system("pause");
+	return 0;
+}
