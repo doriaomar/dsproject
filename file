@@ -1,0 +1,3300 @@
+#include<iostream>
+#include<fstream>
+#include<sstream>
+ 
+#include<string>
+#include<ctime>
+using namespace std;
+struct userdata {
+	string username;
+	string password;
+	string allids[100];
+};
+struct hallplace {
+	int floor;
+	int room;
+};
+struct hall {
+	string name;
+	hallplace place;
+	int numberofseats;
+	string events_shows[100];
+};
+struct date {
+	int day;
+	int year;
+	int month;
+};
+struct events {
+	string name;
+	string evinhall;
+	string id;
+	date startdate;
+	date enddate;
+	string time;
+};
+struct shows {
+	string name;
+	string showinhall;
+	string id;
+	date startdate;
+	date enddate;
+	string time;
+	int showseats;
+};
+struct currentusers {
+	string username;
+	string password;
+	string reservationid[100];
+	string eventid[100];
+	string showid[100];
+};
+
+currentusers user;
+hall halldata[100];
+events eventdata[100];
+shows showdata[100];
+userdata users[100];
+bool admin = false;
+
+void menu_admin();
+void menu_user();
+void main_menu();
+void retrive_data()
+{
+	//start of getting user data from file
+	int usernameindx = 0;
+	int paasswordindx = 1;
+	string temp[1000];
+	ifstream getuserdata;
+	getuserdata.open("userdata.txt");
+	if (getuserdata.fail()) {
+		cout << "Error,File (userdata) not found or is corrupted." << endl;
+		cout << "check file and try again later,program will terminate after you ";
+		system("pause");
+		exit(0);
+	}
+	else {
+		for (int i = 0; i < 1000; i++)
+		{
+			getline(getuserdata, temp[i]);
+		}
+		for (int i = 0; !temp[i].empty(); i++)
+		{
+			users[i].username = temp[usernameindx];
+			users[i].password = temp[paasswordindx];
+			usernameindx += 2;
+			paasswordindx += 2;
+
+		}
+
+	}
+	getuserdata.close();
+	//end of getting userdata from file
+	//---------------------------------------------------------------------------------
+	//start of getting all halls data without events
+	int nameindx = 0;
+	int floorindx = 1;
+	int roomindx = 2;
+	int seatsindx = 3;
+	string temp1[1000];
+	ifstream gethalldata;
+	gethalldata.open("halldata.txt");
+	if (gethalldata.fail())
+	{
+		cout << "Error,File (halldata) not found or is corrupted." << endl;
+		cout << "check file and try again later,program will terminate after you ";
+		system("pause");
+		exit(0);
+	}
+	else
+	{
+		for (int i = 0; i < 1000; i++)
+		{
+			getline(gethalldata, temp1[i]);
+		}
+
+		for (int i = 0; !temp1[i].empty(); i++)
+		{
+			halldata[i].name = temp1[nameindx];
+
+			stringstream floor_to_int(temp1[floorindx]);
+			floor_to_int >> halldata[i].place.floor;
+
+			stringstream room_to_int(temp1[roomindx]);
+			room_to_int >> halldata[i].place.room;
+
+			stringstream seats_to_int(temp1[seatsindx]);
+			seats_to_int >> halldata[i].numberofseats;
+
+			nameindx += 4;
+			floorindx += 4;
+			roomindx += 4;
+			seatsindx += 4;
+
+
+		}
+	}
+	gethalldata.close();
+	//end hall data
+	//-----------------------------------------
+	//start event data retrive
+	int name = 0;
+	int evinhallindx = 1;
+	int idindx = 2;
+	int dayindx = 3;
+	int monthindx = 4;
+	int yearindx = 5;
+	int day1indx = 6;
+	int month1indx = 7;
+	int year1indx = 8;
+	int stime = 9;
+	string tempev[1000];
+	ifstream geteventdata;
+	geteventdata.open("eventdata.txt");
+	if (geteventdata.fail())
+	{
+		cout << "Error,File (eventdata) not found or is corrupted." << endl;
+		cout << "check file and try again later,program will terminate after you ";
+		system("pause");
+		exit(0);
+	}
+	else
+	{
+		for (int i = 0; i < 1000; i++)
+		{
+			getline(geteventdata, tempev[i]);
+		}
+		for (int i = 0; !tempev[i].empty(); i++)
+		{
+
+			eventdata[i].name = tempev[name];
+			eventdata[i].evinhall = tempev[evinhallindx];
+			eventdata[i].id = tempev[idindx];
+
+			stringstream day_to_int(tempev[dayindx]);
+			day_to_int >> eventdata[i].startdate.day;
+			stringstream month_to_int(tempev[monthindx]);
+			month_to_int >> eventdata[i].startdate.month;
+			stringstream year_to_int(tempev[yearindx]);
+			year_to_int >> eventdata[i].startdate.year;
+
+			stringstream eday_to_int(tempev[day1indx]);
+			eday_to_int >> eventdata[i].enddate.day;
+			stringstream emonth_to_int(tempev[month1indx]);
+			emonth_to_int >> eventdata[i].enddate.month;
+			stringstream eyear_to_int(tempev[year1indx]);
+			eyear_to_int >> eventdata[i].enddate.year;
+
+			eventdata[i].time = tempev[stime];
+
+			name += 10;
+			evinhallindx += 10;
+			idindx += 10;
+			dayindx += 10;
+			monthindx += 10;
+			yearindx += 10;
+			day1indx += 10;
+			month1indx += 10;
+			year1indx += 10;
+			stime += 10;
+
+
+
+		}
+	}
+	geteventdata.close();
+	//end event data 
+	//-----------------------------
+	//start shows data
+	int nameindex = 0;
+	int showinhallindex = 1;
+	int idindex = 2;
+	int dayindex = 3;
+	int monthindex = 4;
+	int yearindex = 5;
+	int day1index = 6;
+	int month1index = 7;
+	int year1index = 8;
+	int stime1 = 9;
+	int seats = 10;
+	string tempshow[1100];
+	ifstream getshowdata;
+	getshowdata.open("showdata.txt");
+	if (getshowdata.fail())
+	{
+		cout << "Error,File (showdata) not found or is corrupted." << endl;
+		cout << "check file and try again later,program will terminate after you ";
+		system("pause");
+		exit(0);
+	}
+	else
+	{
+		for (int i = 0; i < 1000; i++)
+		{
+			getline(getshowdata, tempshow[i]);
+		}
+		for (int i = 0; !tempshow[i].empty(); i++)
+		{
+
+
+			showdata[i].name = tempshow[nameindex];
+			showdata[i].showinhall = tempshow[showinhallindex];
+			showdata[i].id = tempshow[idindex];
+
+			stringstream day1_to_int(tempshow[dayindex]);
+			day1_to_int >> showdata[i].startdate.day;
+			stringstream month1_to_int(tempshow[monthindex]);
+			month1_to_int >> showdata[i].startdate.month;
+			stringstream year1_to_int(tempshow[yearindex]);
+			year1_to_int >> showdata[i].startdate.year;
+
+			stringstream eday1_to_int(tempshow[day1index]);
+			eday1_to_int >> showdata[i].enddate.day;
+			stringstream emonth1_to_int(tempshow[month1index]);
+			emonth1_to_int >> showdata[i].enddate.month;
+			stringstream eyear1_to_int(tempshow[year1index]);
+			eyear1_to_int >> showdata[i].enddate.year;
+
+			showdata[i].time = tempshow[stime1];
+			stringstream seats_to_int(tempshow[seats]);
+			seats_to_int >> showdata[i].showseats;
+
+			nameindex += 11;
+			showinhallindex += 11;
+			idindex += 11;
+			dayindex += 11;
+			monthindex += 11;
+			yearindex += 11;
+			day1index += 11;
+			month1index += 11;
+			year1index += 11;
+			stime1 += 11;
+			seats += 11;
+
+		}
+	}
+	getshowdata.close();
+	//end show data
+	//------------------------------------------------
+	//start user reserved event's id
+	ifstream getreseventid;
+	string idinfile[100];
+	int cntt = 0;
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+		if (users[i].username == "admin")
+		{
+			continue;
+		}
+		else
+		{
+
+			string userfile;
+			userfile = users[i].username + ".txt";
+			getreseventid.open(userfile.c_str());
+			if (getreseventid.fail())
+			{
+				cout << "Error,File (" << userfile << ") not found or is corrupted." << endl;
+				cout << "check file and try again later,program will terminate after you ";
+				system("pause");
+				exit(0);
+			}
+			else
+			{
+				for (int j = 0; !getreseventid.eof(); j++)
+				{
+					getline(getreseventid, idinfile[j]);
+				}
+			}
+			for (int j = 0; !idinfile[j].empty(); j++)
+			{
+
+				users[i].allids[j] = idinfile[j];
+
+			}
+			getreseventid.close();
+		}
+	}
+	//end user reserved event's id
+	//---------------------------------------
+	//start hall reserved event's name
+	ifstream geteventinhall;
+	string eventinhall[100];
+	for (int i = 0; !halldata[i].name.empty(); i++)
+	{
+
+		string hallfile;
+		hallfile = halldata[i].name + ".txt";
+		geteventinhall.open(hallfile.c_str());
+		if (geteventinhall.fail())
+		{
+			cout << "Error,File (" << hallfile << ") not found or is corrupted." << endl;
+			cout << "check file and try again later,program will terminate after you ";
+			system("pause");
+			exit(0);
+		}
+		else
+		{
+			for (int j = 0; !geteventinhall.eof(); j++)
+			{
+				getline(geteventinhall, eventinhall[j]);
+			}
+		}
+		for (int j = 0; !eventinhall[j].empty(); j++)
+		{
+			halldata[i].events_shows[j] = eventinhall[j];
+		}
+		geteventinhall.close();
+
+	}
+
+}
+void collect_id()
+{
+	int userscnt = 0;
+	int eventidcnt = 0;
+	int showidcnt = 0;
+	for (int i = 0; !user.eventid[i].empty(); i++)
+	{
+		eventidcnt++;
+	}
+	for (int i = 0; !user.showid[i].empty(); i++)
+	{
+		showidcnt++;
+	}
+	int k = 0;
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+		if (user.username == users[i].username)
+		{
+			for (int j = 0; j < eventidcnt; j++)
+			{
+				users[i].allids[k] = user.eventid[j];
+				k++;
+			}
+			for (int l = 0; l < showidcnt; l++)
+			{
+				users[i].allids[k] = user.showid[l];
+				k++;
+			}
+		}
+	}
+}
+void save_data() {
+	collect_id();
+	//remove files
+	remove("eventdata.txt");
+	remove("userdata.txt");
+	remove("halldata.txt");
+	remove("showdata.txt");
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+		string userremove = users[i].username + ".txt";
+		remove(userremove.c_str());
+	}
+	for (int i = 0; !halldata[i].name.empty(); i++)
+	{
+		cout << halldata[i].name << endl;
+		string hallremove = halldata[i].name + ".txt";
+		remove(hallremove.c_str());
+	}
+	system("pause");
+	//create new user files
+	ofstream newuserdata;
+	newuserdata.open("userdata.txt");
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+
+		newuserdata << users[i].username << endl;
+		newuserdata << users[i].password << endl;
+	}
+	newuserdata.close();
+	//create userfiles
+	ofstream newusersid;
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+		if (users[i].username == "admin")
+		{
+			continue;
+		}
+		else
+		{
+			string userfiles = users[i].username + ".txt";
+			newusersid.open(userfiles.c_str());
+			for (int j = 0; !users[i].allids[j].empty(); j++)
+			{
+				newusersid << users[i].allids[j] << endl;
+			}
+		}
+		newusersid.close();
+	}
+	//create hall files
+	ofstream newhalldata;
+	newhalldata.open("halldata.txt");
+	for (int i = 0; !halldata[i].name.empty(); i++)
+	{
+		newhalldata << halldata[i].name << endl;
+		newhalldata << halldata[i].place.floor << endl;
+		newhalldata << halldata[i].place.room << endl;
+		newhalldata << halldata[i].numberofseats << endl;
+	}
+	newhalldata.close();
+	//create hall files
+	ofstream newhallev;
+	for (int i = 0; !halldata[i].name.empty(); i++)
+	{
+		string hallfiles = halldata[i].name + ".txt";
+		newhallev.open(hallfiles.c_str());
+		for (int j = 0; !halldata[i].events_shows[j].empty(); j++)
+		{
+			newhallev << halldata[i].events_shows[j] << endl;
+		}
+		newhallev.close();
+	}
+	//create eventdata
+	ofstream neweventdata;
+	neweventdata.open("eventdata.txt");
+	for (int i = 0; !eventdata[i].name.empty(); i++)
+	{
+		neweventdata << eventdata[i].name << endl;
+		neweventdata << eventdata[i].evinhall << endl;
+		neweventdata << eventdata[i].id << endl;
+		neweventdata << eventdata[i].startdate.day << endl;
+		neweventdata << eventdata[i].startdate.month << endl;
+		neweventdata << eventdata[i].startdate.year << endl;
+		neweventdata << eventdata[i].enddate.day << endl;
+		neweventdata << eventdata[i].enddate.month << endl;
+		neweventdata << eventdata[i].enddate.year << endl;
+		neweventdata << eventdata[i].time << endl;
+	}
+	neweventdata.close();
+	//create new showdata
+	ofstream newshowdata;
+	newshowdata.open("showdata.txt");
+	for (int i = 0; !showdata[i].name.empty(); i++)
+	{
+		newshowdata << showdata[i].name << endl;
+		newshowdata << showdata[i].showinhall << endl;
+		newshowdata << showdata[i].id << endl;
+		newshowdata << showdata[i].startdate.day << endl;
+		newshowdata << showdata[i].startdate.month << endl;
+		newshowdata << showdata[i].startdate.year << endl;
+		newshowdata << showdata[i].enddate.day << endl;
+		newshowdata << showdata[i].enddate.month << endl;
+		newshowdata << showdata[i].enddate.year << endl;
+		newshowdata << showdata[i].time << endl;
+		newshowdata << showdata[i].showseats << endl;
+	}
+	newshowdata.close();
+	cout << "Data saved successfuly." << endl << endl;
+}
+void sort_id()
+{
+	int eventidindx = 0;
+	for (int k = 0; !user.reservationid[k].empty(); k++)
+	{
+		for (int l = 0; l < 100; l++)
+		{
+			if (user.reservationid[k] == eventdata[l].id)
+			{
+				user.eventid[eventidindx] = user.reservationid[k];
+				eventidindx++;
+			}
+		}
+	}
+	int showidindx = 0;
+	for (int k = 0; !user.reservationid[k].empty(); k++)
+	{
+		for (int l = 0; l < 100; l++)
+		{
+			if (user.reservationid[k] == showdata[l].id)
+			{
+				user.showid[showidindx] = user.reservationid[k];
+				showidindx++;
+			}
+		}
+	}
+}
+void login()
+{
+	system("cls");
+	int cntusers = 0;
+	string tempname;
+	string temppassword;
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+		cntusers++;
+	}
+	cin.ignore();
+	cout << "Enter username : ";
+	getline(cin, tempname);
+	for (int i = 0; i < cntusers; i++)
+	{
+		if (users[i].username == tempname)
+		{
+			cout << "Enter password : ";
+			getline(cin, temppassword);
+			if (users[i].password == temppassword)
+			{
+				cout << "login succesful." << endl;
+				user.username = tempname;
+				user.password = temppassword;
+				for (int j = 0; !users[i].allids[j].empty(); j++)
+				{
+
+					user.reservationid[j] = users[i].allids[j];
+
+				}
+			}
+		}
+	}
+	if (user.username.empty())
+	{
+		cout << "Wrong username or password,Please try again." << endl;
+		system("pause");
+		login();
+	}
+	if (user.username == "admin") {
+		admin = true;
+	}
+	else
+	{
+		admin = false;
+	}
+	system("pause");
+	sort_id();
+	if (admin) {
+		menu_admin();
+	}
+	else
+	{
+		menu_user();
+	}
+}
+void registerme() {
+	system("cls");
+	//check no. of users
+	int cntusers = 0;
+	string tempusername;
+	string temppassword, tempconfirm;
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+		cntusers++;
+	}
+
+	//enter username
+	cin.ignore();
+	cout << "Enter username : ";
+	getline(cin, tempusername);
+	//check for username to avoid duplications
+	for (int i = 0; !users[i].username.empty(); i++)
+	{
+		if (users[i].username == tempusername)
+		{
+			cout << "Username already exsists,try again." << endl;
+			system("pause");
+			registerme();
+		}
+	}
+	//enter password where 4<pass<17
+	cout << "Enetr password : ";
+	getline(cin, temppassword);
+	if (temppassword.size() > 17) {
+		cout << "Password limit exceded." << endl;
+		registerme();
+	}
+	else if (temppassword.size() < 4) {
+		cout << "Password length too small." << endl;
+		registerme();
+	}
+	else
+	{
+		//confirm password
+		cout << "Confirm password : ";
+		getline(cin, tempconfirm);
+		if (temppassword == tempconfirm)
+		{
+			cout << "User registered sucessfuly." << endl;
+			cout << "Username : " << tempusername << endl;
+			cout << "Password : " << temppassword << endl;
+			//put in struct after last user
+			users[cntusers].username = tempusername;
+			users[cntusers].password = temppassword;
+		}
+	}
+	system("pause");
+	main_menu();
+}
+void Exit() {
+	system("cls");
+	save_data();
+	cout << "Thank you for using ASU hall reservation system" << endl;
+	cout << "Have a nice day." << endl;
+	system("pause");
+	exit(0);
+}
+void addnewhall()
+{
+	system("cls");
+	cin.ignore();
+	int hallcnt = 0;
+	int room = 0;
+	int floor = 0;
+	int seatsno = 0;
+	string newhall;
+	//loop el cnt to get size
+	for (int j = 0; !halldata[j].name.empty(); j++)
+	{
+		hallcnt++;
+	}
+	cout << "Enter hall's name : ";
+
+	for (int i = 0; !halldata[i].name.empty(); i++)
+	{
+		while (newhall.length() == 0)
+		{                               //keep reading a new line when there is a blank line
+			getline(cin, newhall);
+		}
+		if (halldata[i].name == newhall)
+		{
+			cout << "Sorry , Hall's name already exsist,try again" << endl;
+			system("pause");
+			addnewhall();
+		}
+	}
+	cout << "Enter the Hall location" << endl << "1) Floor number : ";
+	cin >> floor;
+	if (floor <= 0)
+	{
+		cout << "Error,Floor number must be > 0." << endl;
+		system("pause");
+		addnewhall();
+	}
+	cout << endl << "2) Room number : ";
+	cin >> room;
+	if (room <= 0)
+	{
+		cout << "Error,Room number must be >0." << endl;
+		system("pause");
+		addnewhall();
+	}
+	for (int k = 0; k < hallcnt; k++)
+	{
+		if (halldata[k].place.room == room)
+		{
+			cout << "Sorry , this room is already reserved ,try again" << endl;
+			cout << "2) Room number : ";
+			cin >> room;
+		}
+	}
+	//endloop
+	cout << "Enter number of seats (max 100) : ";
+	cin >> seatsno;
+	if (seatsno > 100)
+	{
+		cout << "Error,exceded max seats limit." << endl;
+		cout << "Enter number of seat (max 100) : ";
+		cin >> seatsno;
+	}
+	halldata[hallcnt].name = newhall;
+	halldata[hallcnt].place.floor = floor;
+	halldata[hallcnt].place.room = room;
+	halldata[hallcnt].numberofseats = seatsno;
+	cout << endl << "Addition done" << endl;
+	cout << "*********************" << endl;
+	cout << "Data after addition : " << endl << endl;
+	cout << "Hall Name : " << halldata[hallcnt].name << endl;
+	cout << "Hall location : " << endl << "1) Floor number : " << halldata[hallcnt].place.floor << endl;
+	cout << "2) Room number : " << halldata[hallcnt].place.room << endl << endl;
+	cout << "N of seats : " << halldata[hallcnt].numberofseats << endl;
+	cout << "*************" << endl;
+
+	cout << "Do you want to add another hall (y/n)? : ";
+	char confirm;
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		addnewhall();
+	}
+	else
+	{
+		menu_admin();
+	}
+}
+void removehall()
+{
+	system("cls");
+	cout << "(WARNING! ALL EVENTS AND SHOWS IN HALL WILL BE DELETED ON REMOVAL)" << endl << endl;
+	int hallcnt = 0;
+	int evshiftindex = 0;
+	int showshiftindex = 0;
+	int evind = 0;
+	int idshiftindex = 0;
+	string evremid;
+	string shremid;
+	for (int j = 0; !halldata[j].name.empty(); j++)
+	{
+		hallcnt++;
+	}
+	int removalindex;
+	cout << "Select a Hall to remove : " << endl << endl;
+	for (int g = 0; g < hallcnt; g++)
+	{
+		cout << g + 1 << '.' << halldata[g].name << endl;
+	}
+	cout << endl << "Hall to be removed : ";
+	cin >> removalindex;
+	if (cin.fail())
+	{
+		cout << "Error,Invalid input" << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		removehall();
+	}
+
+	for (int i = 0; !eventdata[i].name.empty(); i++)
+	{
+		if (eventdata[i].evinhall == halldata[removalindex - 1].name)
+		{
+			evremid = eventdata[i].id;
+			for (int k = 0; !users[k].username.empty(); k++)
+			{
+				for (int j = 0; !users[k].allids[j].empty(); j++)
+				{
+					if (users[k].allids[j] == evremid)
+					{
+						idshiftindex = j;
+						for (int x = idshiftindex; !users[k].allids[x].empty(); x++)
+						{
+							users[k].allids[x] = users[k].allids[x + 1];
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+	for (int i = 0; !showdata[i].name.empty(); i++)
+	{
+		if (showdata[i].showinhall == halldata[removalindex - 1].name)
+		{
+			shremid = showdata[i].id;
+			for (int k = 0; !users[k].username.empty(); k++)
+			{
+				for (int j = 0; !users[k].allids[j].empty(); j++)
+				{
+					if (users[k].allids[j] == shremid)
+					{
+						idshiftindex = j;
+						for (int x = idshiftindex; !users[k].allids[x].empty(); x++)
+						{
+							users[k].allids[x] = users[k].allids[x + 1];
+						}
+					}
+				}
+			}
+		}
+	}
+	for (int i = 0; !halldata[removalindex - 1].events_shows[i].empty(); i++)
+	{
+
+		for (int r = 0; !eventdata[r].name.empty(); r++)
+		{
+			if (eventdata[r].name == halldata[removalindex - 1].events_shows[i])
+			{
+				evshiftindex = r;
+				for (int s = evshiftindex; !eventdata[s].name.empty(); s++)
+				{
+					eventdata[s].name = eventdata[s + 1].name;
+					eventdata[s].evinhall = eventdata[s + 1].evinhall;
+					eventdata[s].id = eventdata[s + 1].id;
+					eventdata[s].startdate = eventdata[s + 1].startdate;
+					eventdata[s].time = eventdata[s + 1].time;
+				}
+				break;
+			}
+		}
+	}
+	for (int i = 0; !halldata[removalindex - 1].events_shows[i].empty(); i++)
+	{
+
+		for (int r = 0; !showdata[r].name.empty(); r++)
+		{
+			if (showdata[r].name == halldata[removalindex - 1].events_shows[i])
+			{
+				showshiftindex = r;
+				for (int s = showshiftindex; !showdata[s].name.empty(); s++)
+				{
+					showdata[s].name = showdata[s + 1].name;
+					showdata[s].showinhall = showdata[s + 1].showinhall;
+					showdata[s].id = showdata[s + 1].id;
+					showdata[s].startdate = showdata[s + 1].startdate;
+					showdata[s].time = showdata[s + 1].time;
+				}
+				break;
+			}
+		}
+	}
+	string removefile = (halldata[removalindex - 1].name + ".txt");
+	remove(removefile.c_str());
+	for (int j = removalindex - 1; !halldata[j].name.empty(); j++)
+	{
+		halldata[j].name = halldata[j + 1].name;
+		halldata[j].place.floor = halldata[j + 1].place.floor;
+		halldata[j].place.room = halldata[j + 1].place.room;
+		halldata[j].numberofseats = halldata[j + 1].numberofseats;
+		for (int k = 0; !halldata[j].events_shows[k].empty(); k++)
+		{
+			halldata[j].events_shows[k] = halldata[j + 1].events_shows[k];
+		}
+	}
+	system("pause");
+	cout << "**********************" << endl << "DATA AFTER REMOVAL" << endl << "*******************" << endl;
+	//HALL DATA DISPLAY
+	cout << "HALLS" << endl;
+	for (int p = 0; !halldata[p].name.empty(); p++)
+	{
+		cout << "Hall Name : " << halldata[p].name << endl;
+		cout << "Hall location : " << endl << "1) Floor number : " << halldata[p].place.floor << endl;
+		cout << "2)Room number : " << halldata[p].place.room << endl << endl;
+		cout << "hall's number of seats : " << halldata[p].numberofseats << endl;
+		cout << "------------------------------------------" << endl;
+	}
+	cout << "****************************************" << endl;
+	//EVENTS DATA DISPLAY
+	cout << "EVENTS" << endl << endl;
+	for (int z = 0; !eventdata[z].name.empty(); z++)
+	{
+		cout << endl << "Event Name : " << eventdata[z].name << endl;
+		cout << "Event Location : " << eventdata[z].evinhall << endl;
+		cout << "Event ID : " << eventdata[z].id << endl;
+		cout << "Event Startdate : " << eventdata[z].startdate.day << "/" << eventdata[z].startdate.month << "/" << eventdata[z].startdate.year << endl;
+		cout << "Event Enddate : " << eventdata[z].enddate.day << "/" << eventdata[z].enddate.month << "/" << eventdata[z].enddate.year << endl;
+		cout << "Event Time slot : From " << eventdata[z].time << endl;
+	}
+	cout << "****************************************" << endl;
+	//shows display
+	cout << "SHOWS" << endl << endl;
+	for (int z = 0; !showdata[z].name.empty(); z++)
+	{
+		cout << "Show Name : " << showdata[z].name << endl;
+		cout << "Show Location : " << showdata[z].showinhall << endl;
+		cout << "ShowID : " << showdata[z].id << endl;
+		cout << "Show StartDate : " << showdata[z].startdate.day << "/" << showdata[z].startdate.month << "/" << showdata[z].startdate.year << endl;
+		cout << "Show EndDate : " << showdata[z].enddate.day << "/" << showdata[z].enddate.month << "/" << showdata[z].enddate.year << endl;
+		cout << "Show Time slot : From " << showdata[z].time << endl;
+		cout << "Show's remaning number of seats : " << showdata[z].showseats << endl;
+		cout << "------------------------------------------" << endl;
+	}
+	cout << "****************************************" << endl;
+	//USER IDS DATA DISPLAY
+	cout << "USER  RESERVATION IDs" << endl << endl;
+	int ind = 1;
+	for (int g = 0; !users[g].username.empty(); g++)
+	{
+		cout << "Userame : " << users[g].username << endl;
+		cout << "RESERVATION IDs : " << endl;
+		for (int f = 0; !users[g].allids[f].empty(); f++)
+		{
+			cout << ind << "." << users[g].allids[f] << endl;
+			ind++;
+		}
+		ind = 1;
+		cout << "------------------------------------------" << endl;
+	}
+	//string removefile = halldate[removalindex].name + ".txt";
+	cout << "Do you want to delete another hall (y/n)? : ";
+	char confirm;
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		removehall();
+	}
+	else
+	{
+		menu_admin();
+	}
+}
+void createevent()
+{
+	system("cls");
+	bool time1_check = true;
+	bool time2_check = true;
+	bool time3_check = true;
+	bool time4_check = true;
+	bool time5_check = true;
+	bool time6_check = true;
+	string timeslot1 = "12:00 to 2:00";
+	string timeslot2 = "2:00 to 4:00";
+	string timeslot3 = "4:00 to 6:00";
+	string timeslot4 = "6:00 to 8:00";
+	string timeslot5 = "8:00 to 10:00";
+	string timeslot6 = "10:00 to 12:00";
+	string evname;
+	string id;
+	string time2;
+	string hallname;
+	int userday, usermonth, useryear;
+	int eventsnumber = 0, allcnt = 0;
+	int day, month, year, choice, hallindex;
+	int startformula, endformula, userformula, userendformula;
+
+	for (int i = 0; !eventdata[i].name.empty(); i++)
+	{
+		eventsnumber++;
+	}
+	cin.ignore();
+	cout << "Enter Event name : ";
+	getline(cin, evname);
+
+	for (int i = 0; i < eventsnumber; i++)
+	{
+		if (evname == eventdata[i].name)
+		{
+			cout << "Error,Name already exist." << endl;
+			system("pause");
+			createevent();
+		}
+	}
+	srand(time(NULL));
+	ostringstream id_to_string;
+	id_to_string << rand();
+	id = id_to_string.str();
+
+
+	cout << "Enter Events's start date (dd/mm/yyyy)(Max duration = 14 days) : ";
+	cin >> userday >> usermonth >> useryear;
+	cout << "Enter Events's end date(dd/mm/yyyy) : ";
+	cin >> day >> month >> year;
+
+
+	userformula = userday + (usermonth * 30) + (useryear * 365);
+	userendformula = day + (month * 30) + (year * 365);
+	if (useryear == year && (userendformula < userformula || userendformula - userformula < 0 || userendformula - userformula > 14))
+	{
+		cout << "Error,End date < Start date or Exceded max duration" << endl;
+		system("pause");
+		createevent();
+	}
+	else if (useryear != year && (userendformula < userformula || userendformula - userformula < 0 || userendformula - userformula > 19))
+	{
+		cout << "Error,End date < Start date or Exceded max duration" << endl;
+		system("pause");
+		createevent();
+	}
+	else
+	{
+
+		cout << "Choose a Hall where the Event will be held : " << endl << endl;
+		for (int i = 0; !halldata[i].name.empty(); i++)
+		{
+			cout << i + 1 << "." << halldata[i].name << endl;
+		}
+		cout << endl << "Hall choice : ";
+		cin >> choice;
+		if (cin.fail())
+		{
+			cout << "Error,Invalid input" << endl;
+			cin.clear();
+			cin.ignore();
+			system("pause");
+			createevent();
+		}
+		hallname = halldata[choice - 1].name;
+
+		for (int i = 0; !halldata[choice - 1].events_shows[i].empty(); i++)
+		{
+			allcnt++;
+		}
+
+		for (int i = 0; !halldata[i].name.empty(); i++)
+		{
+			if (halldata[choice - 1].name == halldata[i].name)
+			{
+				hallindex = i;
+				break;
+			}
+		}
+		for (int i = 0; !halldata[hallindex].events_shows[i].empty(); i++)
+		{
+			for (int j = 0; !eventdata[j].name.empty(); j++)
+			{
+				if (halldata[hallindex].events_shows[i] == eventdata[j].name)
+				{
+					if (eventdata[j].startdate.day == userday && eventdata[j].startdate.month == usermonth && eventdata[j].startdate.year == useryear)
+					{
+						if (eventdata[j].time == timeslot1)
+						{
+							time1_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot2)
+						{
+							time2_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot3)
+						{
+							time3_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot4)
+						{
+							time4_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot5)
+						{
+							time5_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot6)
+						{
+							time6_check = false;
+							break;
+						}
+					}
+					else if (eventdata[j].startdate.day != userday && eventdata[j].startdate.month == usermonth && eventdata[j].startdate.year == useryear)
+					{
+						startformula = eventdata[j].startdate.day + (eventdata[j].startdate.month * 30);
+						endformula = eventdata[j].enddate.day + (eventdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (eventdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (eventdata[j].startdate.month != usermonth && eventdata[j].startdate.year == useryear)
+					{
+						startformula = eventdata[j].startdate.day + (eventdata[j].startdate.month * 30);
+						endformula = eventdata[j].enddate.day + (eventdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+							if (eventdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (eventdata[j].startdate.year != useryear)
+					{
+						startformula = eventdata[j].startdate.day + (eventdata[j].startdate.month * 30) + (eventdata[j].startdate.year * 365);
+						endformula = eventdata[j].enddate.day + (eventdata[j].enddate.month * 30) + (eventdata[j].enddate.year * 365);
+						userformula = userday + (usermonth * 30) + (useryear * 365);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (eventdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+		for (int i = 0; !halldata[hallindex].events_shows[i].empty(); i++)
+		{
+			for (int j = 0; !showdata[j].name.empty(); j++)
+			{
+				if (halldata[hallindex].events_shows[i] == showdata[j].name)
+				{
+					if (showdata[j].startdate.day == userday && showdata[j].startdate.month == usermonth && showdata[j].startdate.year == useryear)
+					{
+						if (showdata[j].time == timeslot1)
+						{
+							time1_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot2)
+						{
+							time2_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot3)
+						{
+							time3_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot4)
+						{
+							time4_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot5)
+						{
+							time5_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot6)
+						{
+							time6_check = false;
+							break;
+						}
+					}
+					else if (showdata[j].startdate.day != userday && showdata[j].startdate.month == usermonth && showdata[j].startdate.year == useryear)
+					{
+						startformula = showdata[j].startdate.day + (showdata[j].startdate.month * 30);
+						endformula = showdata[j].enddate.day + (showdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (showdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (showdata[j].startdate.month != usermonth && showdata[j].startdate.year == useryear)
+					{
+						startformula = showdata[j].startdate.day + (showdata[j].startdate.month * 30);
+						endformula = showdata[j].enddate.day + (showdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+							if (showdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (showdata[j].startdate.year != useryear)
+					{
+						startformula = showdata[j].startdate.day + (showdata[j].startdate.month * 30) + (showdata[j].startdate.year * 365);
+						endformula = showdata[j].enddate.day + (showdata[j].enddate.month * 30) + (showdata[j].enddate.year * 365);
+						userformula = userday + (usermonth * 30) + (useryear * 365);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (showdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+				}
+
+			}
+
+		}
+		int choice2 = 0;
+		int ind = 1;
+		if (time1_check == false && time2_check == false && time3_check == false && time4_check == false && time5_check == false && time6_check == false)
+		{
+			cout << "no avaliable time slots on that date in this hall.";
+			system("pause");
+			menu_user();
+		}
+		else
+		{
+
+			cout << "Avaliable time slots : " << endl << endl;
+			if (time1_check)
+			{
+				cout << ind << "." << "From " << timeslot1 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot1 << "			" << "Reserved" << endl;
+				ind++;
+			}if (time2_check)
+			{
+				cout << ind << "." << "From " << timeslot2 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot2 << "			" << "Reserved" << endl;
+				ind++;
+			}if (time3_check)
+			{
+				cout << ind << "." << "From " << timeslot3 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot3 << "			" << "Reserved" << endl;
+				ind++;
+			}
+			if (time4_check)
+			{
+				cout << ind << "." << "From " << timeslot4 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot4 << "			" << "Reserved" << endl;
+				ind++;
+			}
+			if (time5_check)
+			{
+				cout << ind << "." << "From " << timeslot5 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot5 << "			" << "Reserved" << endl;
+				ind++;
+			}if (time6_check)
+			{
+				cout << ind << "." << "From " << timeslot6 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot6 << "			" << "Reserved" << endl;
+				ind++;
+			}
+			cout << "Time slot choice : ";
+			cin >> choice2;
+			switch (choice2)
+			{
+			case 1:
+				if (time1_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createevent();
+				}
+				else
+				{
+					time2 = timeslot1;
+				}
+				break;
+			case 2:
+				if (time2_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createevent();
+				}
+				else
+				{
+					time2 = timeslot2;
+				}
+				break;
+			case 3:
+				if (time3_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createevent();
+				}
+				else
+				{
+					time2 = timeslot3;
+				}
+				break;
+			case 4:
+				if (time4_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createevent();
+				}
+				else
+				{
+					time2 = timeslot4;
+				}
+				break;
+			case 5:
+				if (time5_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createevent();
+				}
+				else
+				{
+					time2 = timeslot5;
+				}
+				break;
+			case 6:
+				if (time6_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createevent();
+				}
+				else
+				{
+					time2 = timeslot6;
+				}
+				break;
+			default:
+				cout << "Error,Invalid input" << endl;
+				cin.clear();
+				cin.ignore();
+				system("pause");
+				createevent();
+				break;
+			}
+			cout << "Event created" << endl;
+		}
+		eventdata[eventsnumber].name = evname;
+		eventdata[eventsnumber].id = id;
+		eventdata[eventsnumber].evinhall = hallname;
+		eventdata[eventsnumber].startdate.day = userday;
+		eventdata[eventsnumber].startdate.month = usermonth;
+		eventdata[eventsnumber].startdate.year = useryear;
+		eventdata[eventsnumber].enddate.day = day;
+		eventdata[eventsnumber].enddate.month = month;
+		eventdata[eventsnumber].enddate.year = year;
+		eventdata[eventsnumber].time = time2;
+		halldata[choice - 1].events_shows[allcnt] = evname;
+		cout << "**********************************" << endl;
+		cout << " New Event Data " << endl;
+		cout << "**********************************" << endl;
+		cout << "Event Name : " << eventdata[eventsnumber].name << endl;
+		cout << "Event Id : " << eventdata[eventsnumber].id << endl;
+		cout << "Event hall : " << eventdata[eventsnumber].evinhall << endl;
+		cout << "Event Start date : " << eventdata[eventsnumber].startdate.day << "/" << eventdata[eventsnumber].startdate.month << "/" << eventdata[eventsnumber].startdate.year << endl;
+		cout << "Event End date : " << eventdata[eventsnumber].enddate.day << "/" << eventdata[eventsnumber].enddate.month << "/" << eventdata[eventsnumber].enddate.year << endl;
+		cout << "Event duration : From " << eventdata[eventsnumber].time << endl;
+	}
+	char confirm;
+	cout << endl << "Do you want to create another Show(y/n)? : " << endl;
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		createevent();
+	}
+	else
+	{
+		menu_user();
+	}
+}
+void createshow()
+{
+	system("cls");
+	bool time1_check = true;
+	bool time2_check = true;
+	bool time3_check = true;
+	bool time4_check = true;
+	bool time5_check = true;
+	bool time6_check = true;
+	string timeslot1 = "12:00 to 2:00";
+	string timeslot2 = "2:00 to 4:00";
+	string timeslot3 = "4:00 to 6:00";
+	string timeslot4 = "6:00 to 8:00";
+	string timeslot5 = "8:00 to 10:00";
+	string timeslot6 = "10:00 to 12:00";
+	string shname;
+	string id;
+	string time2;
+	string hallname;
+	int userday, usermonth, useryear;
+	int shownumber = 0, allcnt = 0;
+	int day, month, year, choice, hallindex;
+	int startformula, endformula, userformula, userendformula;
+	int seats = 0;
+
+	for (int i = 0; !showdata[i].name.empty(); i++)
+	{
+		shownumber++;
+	}
+	cin.ignore();
+	cout << "Enter Show name : ";
+	getline(cin, shname);
+
+	for (int i = 0; i < shownumber; i++)
+	{
+		if (shname == showdata[i].name)
+		{
+			cout << "Name already exists." << endl;
+			system("pause");
+			createshow();
+		}
+	}
+	srand(time(NULL));
+	ostringstream id_to_string;
+	id_to_string << rand();
+	id = id_to_string.str();
+
+
+	cout << "Enter Show's start date (dd/mm/yyyy)(Max duration = 14 days) : ";
+	cin >> userday >> usermonth >> useryear;
+	cout << "Enter Show's end date (dd/mm/yyyy) : ";
+	cin >> day >> month >> year;
+
+
+	userformula = userday + (usermonth * 30) + (useryear * 365);
+	userendformula = day + (month * 30) + (year * 365);
+	if (useryear == year && (userendformula < userformula || userendformula - userformula < 0 || userendformula - userformula > 14))
+	{
+		cout << endl << "Error,End date < Start date or Exceded max duration" << endl;
+		system("pause");
+		createshow();
+	}
+	else if (useryear != year && (userendformula < userformula || userendformula - userformula < 0 || userendformula - userformula > 19))
+	{
+		cout << endl << "Error,End date < Start date or Exceded max duration" << endl;
+		system("pause");
+		createshow();
+	}
+	else
+	{
+
+		cout << "Choose Hall where Show would be held : " << endl << endl;
+		for (int i = 0; !halldata[i].name.empty(); i++)
+		{
+			cout << i + 1 << "." << halldata[i].name << endl;
+		}
+		cout << endl << "Hall choice : ";
+		cin >> choice;
+		if (cin.fail())
+		{
+			cout << "Error,Invalid input" << endl;
+			cin.clear();
+			cin.ignore();
+			system("pause");
+			createshow();
+		}
+		hallname = halldata[choice - 1].name;
+
+		for (int i = 0; !halldata[choice - 1].events_shows[i].empty(); i++)
+		{
+			allcnt++;
+		}
+
+		for (int i = 0; !halldata[i].name.empty(); i++)
+		{
+			if (halldata[choice - 1].name == halldata[i].name)
+			{
+				hallindex = i;
+				break;
+			}
+		}
+		for (int i = 0; !halldata[hallindex].events_shows[i].empty(); i++)
+		{
+			for (int j = 0; !eventdata[j].name.empty(); j++)
+			{
+				if (halldata[hallindex].events_shows[i] == eventdata[j].name)
+				{
+					if (eventdata[j].startdate.day == userday && eventdata[j].startdate.month == usermonth && eventdata[j].startdate.year == useryear)
+					{
+						if (eventdata[j].time == timeslot1)
+						{
+							time1_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot2)
+						{
+							time2_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot3)
+						{
+							time3_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot4)
+						{
+							time4_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot5)
+						{
+							time5_check = false;
+							break;
+						}
+						else if (eventdata[j].time == timeslot6)
+						{
+							time6_check = false;
+							break;
+						}
+					}
+					else if (eventdata[j].startdate.day != userday && eventdata[j].startdate.month == usermonth && eventdata[j].startdate.year == useryear)
+					{
+						startformula = eventdata[j].startdate.day + (eventdata[j].startdate.month * 30);
+						endformula = eventdata[j].enddate.day + (eventdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (eventdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (eventdata[j].startdate.month != usermonth && eventdata[j].startdate.year == useryear)
+					{
+						startformula = eventdata[j].startdate.day + (eventdata[j].startdate.month * 30);
+						endformula = eventdata[j].enddate.day + (eventdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+							if (eventdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (eventdata[i].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (eventdata[j].startdate.year != useryear)
+					{
+						startformula = eventdata[j].startdate.day + (eventdata[j].startdate.month * 30) + (eventdata[j].startdate.year * 365);
+						endformula = eventdata[j].enddate.day + (eventdata[j].enddate.month * 30) + (eventdata[j].enddate.year * 365);
+						userformula = userday + (usermonth * 30) + (useryear * 365);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (eventdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (eventdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+		for (int i = 0; !halldata[hallindex].events_shows[i].empty(); i++)
+		{
+			for (int j = 0; !showdata[j].name.empty(); j++)
+			{
+				if (halldata[hallindex].events_shows[i] == showdata[j].name)
+				{
+					if (showdata[j].startdate.day == userday && showdata[j].startdate.month == usermonth && showdata[j].startdate.year == useryear)
+					{
+						if (showdata[j].time == timeslot1)
+						{
+							time1_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot2)
+						{
+							time2_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot3)
+						{
+							time3_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot4)
+						{
+							time4_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot5)
+						{
+							time5_check = false;
+							break;
+						}
+						else if (showdata[j].time == timeslot6)
+						{
+							time6_check = false;
+							break;
+						}
+					}
+					else if (showdata[j].startdate.day != userday && showdata[j].startdate.month == usermonth && showdata[j].startdate.year == useryear)
+					{
+						startformula = showdata[j].startdate.day + (showdata[j].startdate.month * 30);
+						endformula = showdata[j].enddate.day + (showdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (showdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (showdata[j].startdate.month != usermonth && showdata[j].startdate.year == useryear)
+					{
+						startformula = showdata[j].startdate.day + (showdata[j].startdate.month * 30);
+						endformula = showdata[j].enddate.day + (showdata[j].enddate.month * 30);
+						userformula = userday + (usermonth * 30);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+							if (showdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (showdata[i].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+					else if (showdata[j].startdate.year != useryear)
+					{
+						startformula = showdata[j].startdate.day + (showdata[j].startdate.month * 30) + (showdata[j].startdate.year * 365);
+						endformula = showdata[j].enddate.day + (showdata[j].enddate.month * 30) + (showdata[j].enddate.year * 365);
+						userformula = userday + (usermonth * 30) + (useryear * 365);
+						if (userformula >= startformula && userformula <= endformula)
+						{
+
+							if (showdata[j].time == timeslot1)
+							{
+								time1_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot2)
+							{
+								time2_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot3)
+							{
+								time3_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot4)
+							{
+								time4_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot5)
+							{
+								time5_check = false;
+								break;
+							}
+							else if (showdata[j].time == timeslot6)
+							{
+								time6_check = false;
+								break;
+							}
+						}
+					}
+				}
+
+			}
+
+		}
+		int choice2 = 0;
+		int ind = 1;
+		if (time1_check == false && time2_check == false && time3_check == false && time4_check == false && time5_check == false && time6_check == false)
+		{
+			cout << "no avaliable time slots on that date in this hall.";
+			system("pause");
+			menu_user();
+		}
+		else
+		{
+
+			cout << "Avaliable time slots : " << endl << endl;
+			if (time1_check)
+			{
+				cout << ind << "." << "From " << timeslot1 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot1 << "			" << "Reserved" << endl;
+				ind++;
+			}if (time2_check)
+			{
+				cout << ind << "." << "From " << timeslot2 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot2 << "			" << "Reserved" << endl;
+				ind++;
+			}if (time3_check)
+			{
+				cout << ind << "." << "From " << timeslot3 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot3 << "			" << "Reserved" << endl;
+				ind++;
+			}
+			if (time4_check)
+			{
+				cout << ind << "." << "From " << timeslot4 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot4 << "			" << "Reserved" << endl;
+				ind++;
+			}
+			if (time5_check)
+			{
+				cout << ind << "." << "From " << timeslot5 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot5 << "			" << "Reserved" << endl;
+				ind++;
+			}if (time6_check)
+			{
+				cout << ind << "." << "From " << timeslot6 << endl;
+				ind++;
+			}
+			else
+			{
+				cout << ind << "." << "From " << timeslot6 << "			" << "Reserved" << endl;
+				ind++;
+			}
+			cout << "Time slot choice : ";
+			cin >> choice2;
+			switch (choice2)
+			{
+			case 1:
+				if (time1_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createshow();
+				}
+				else
+				{
+					time2 = timeslot1;
+				}
+				break;
+			case 2:
+				if (time2_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createshow();
+				}
+				else
+				{
+					time2 = timeslot2;
+				}
+				break;
+			case 3:
+				if (time3_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createshow();
+				}
+				else
+				{
+					time2 = timeslot3;
+				}
+				break;
+			case 4:
+				if (time4_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createshow();
+				}
+				else
+				{
+					time2 = timeslot4;
+				}
+				break;
+			case 5:
+				if (time5_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createshow();
+				}
+				else
+				{
+					time2 = timeslot5;
+				}
+				break;
+			case 6:
+				if (time6_check == false)
+				{
+					cout << "time slot not avaliable";
+					system("pause");
+					createshow();
+				}
+				else
+				{
+					time2 = timeslot6;
+				}
+				break;
+			default:
+				cout << "Error,Invalid input" << endl;
+				cin.clear();
+				cin.ignore();
+				system("pause");
+				createshow();
+				break;
+			}
+		}cout << "Enter number of seats : " << endl;
+		cin >> seats;
+		if (seats > 100)
+		{
+			cout << "Exceded max number of seats" << endl;
+			system("pause");
+			createshow();
+		}
+		else
+		{
+
+			showdata[shownumber].name = shname;
+			showdata[shownumber].id = id;
+			showdata[shownumber].showinhall = hallname;
+			showdata[shownumber].startdate.day = userday;
+			showdata[shownumber].startdate.month = usermonth;
+			showdata[shownumber].startdate.year = useryear;
+			showdata[shownumber].enddate.day = day;
+			showdata[shownumber].enddate.month = month;
+			showdata[shownumber].enddate.year = year;
+			showdata[shownumber].time = time2;
+			showdata[shownumber].showseats = seats;
+			halldata[choice - 1].events_shows[allcnt] = shname;
+		}
+		cout << "Show created" << endl;
+		cout << "**********************************" << endl;
+		cout << " New Show Data " << endl;
+		cout << "**********************************" << endl;
+		cout << "Show Name : " << showdata[shownumber].name << endl;
+		cout << "Show Id : " << showdata[shownumber].id << endl;
+		cout << "Show hall : " << showdata[shownumber].showinhall << endl;
+		cout << "Show Start date : " << showdata[shownumber].startdate.day << "/" << showdata[shownumber].startdate.month << "/" << showdata[shownumber].startdate.year << endl;
+		cout << "Show End date : " << showdata[shownumber].enddate.day << "/" << showdata[shownumber].enddate.month << "/" << showdata[shownumber].enddate.year << endl;
+		cout << "Show duration : From " << showdata[shownumber].time << endl;
+		cout << "show's number of seats : " << showdata[shownumber].showseats << endl;
+
+	}
+	char confirm;
+	cout << endl << "Do you want to create another Show(y/n)? : " << endl;
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		createshow();
+	}
+	else
+	{
+		menu_user();
+	}
+}
+void upcomingevents()
+{
+	system("cls");
+	int cnt = 0;
+	int eventcnt = 0;
+	int year = 0;
+	int month = 0;
+	int day = 0;
+	int uservalue = 0, startvalue = 0;
+	for (int i = 0; !eventdata[i].name.empty(); i++)
+	{
+		eventcnt++;
+	}
+	cout << "Please Enter date to display upcoming events : ";
+	cin >> day >> month >> year;
+	cout << endl << "Upcoming events are : " << endl << endl;
+	for (int i = 0; i < eventcnt; i++)
+	{
+		uservalue = day + (month * 30) + (year * 365);
+		startvalue = eventdata[i].startdate.day + (eventdata[i].startdate.month * 30) + (eventdata[i].startdate.year * 365);
+		if (uservalue <= startvalue)
+		{
+			cout << "Event name : " << eventdata[i].name << endl;
+			cout << "Event id : " << eventdata[i].id << endl;
+			cout << "Event Hall : " << eventdata[i].evinhall << endl;
+			cout << "Event start date is : " << eventdata[i].startdate.day << "/" << eventdata[i].startdate.month << "/" << eventdata[i].startdate.year << endl;;
+			cout << "event end date is : " << eventdata[i].enddate.day << "/" << eventdata[i].enddate.month << "/" << eventdata[i].enddate.year << endl;
+			cout << "Event Timeslot is : From " << eventdata[i].time << endl;
+			cout << "************************" << endl;
+			cnt++;
+		}
+	}
+	if (user.username == "admin")
+	{
+		if (cnt < 1)
+		{
+			cout << "No events found.";
+			system("pause");
+			menu_admin();
+		}
+		system("pause");
+		menu_admin();
+	}
+	else
+	{
+		if (cnt < 1)
+		{
+			cout << "No events found.";
+			system("pause");
+			menu_user();
+		}
+		system("pause");
+		menu_user();
+
+	}
+
+
+
+
+}
+void showreservation()
+{
+	system("cls");
+	int showcnt = 0;
+	int eventcnt = 0;
+	int userid = 0;
+	bool checkshows = false;
+	char confirm;
+	bool alreadyreserved = false;
+	for (int j = 0; !showdata[j].name.empty(); j++)
+	{
+		showcnt++;
+	}
+	for (int h = 0; !eventdata[h].name.empty(); h++)
+	{
+		eventcnt++;
+	}
+	for (int i = 0; !user.showid[i].empty(); i++)
+	{
+		userid++;
+	}
+	cout << "Select a Show to reserve : " << endl << endl;
+	int index = 1;
+	for (int i = 0; i < showcnt; i++)
+	{
+		if (showdata[i].showseats <= 100)
+		{
+			cout << index << '.';
+			cout << showdata[i].name << endl;
+			index++;
+		}
+	}
+	int choice;
+	cout << endl << "Show choice : ";
+	cin >> choice;
+	int tobereserveddate = showdata[choice - 1].startdate.day + (showdata[choice - 1].startdate.month * 30);
+	int each_eventstdate, each_eventenddate, each_showstdate, each_showenddate;
+	if (cin.fail())
+	{
+		cout << "Error,Input invalid." << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		showreservation();
+	}
+	else
+	{
+		if (choice <= index && choice > 0)
+		{
+			for (int h = 0; h < showcnt; h++)
+			{
+				if (user.showid[h] == showdata[choice - 1].id)
+				{
+					cout << "Show is already reserved." << endl;
+					checkshows = true;
+					alreadyreserved = true;
+					system("pause");
+					break;
+				}
+			}
+			if (alreadyreserved == false)
+			{
+				for (int a = 0; a < showcnt; a++)
+				{
+					for (int b = 0; b < showcnt; b++)
+					{
+						if (user.showid[a] == showdata[b].id)
+						{
+							if (showdata[b].startdate.day == showdata[choice - 1].startdate.day && showdata[b].startdate.month == showdata[choice - 1].startdate.month && showdata[b].startdate.year == showdata[choice - 1].startdate.year)
+							{
+								if (showdata[b].time == showdata[choice - 1].time)
+								{
+									cout << "You already have a reserved show at the same time slot." << endl;
+									cout << "Do you want to confirm reservation (y/n)? : ";
+									cin >> confirm;
+									if (confirm == 'y' || confirm == 'Y')
+									{
+										checkshows = false;
+										break;
+									}
+									else
+									{
+										showreservation();
+										break;
+									}
+								}
+							}
+							else if (showdata[b].startdate.day != showdata[choice - 1].startdate.day && showdata[b].startdate.month == showdata[choice - 1].startdate.month && showdata[b].startdate.year == showdata[choice - 1].startdate.year)
+							{
+								each_showstdate = showdata[b].startdate.day + (showdata[b].startdate.month * 30);
+								each_showenddate = showdata[b].enddate.day + (showdata[b].enddate.month * 30);
+								if (tobereserveddate >= each_showstdate && tobereserveddate <= each_showenddate)
+								{
+									if (showdata[b].time == showdata[choice - 1].time)
+									{
+										cout << "You already have a reserved show at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : ";
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkshows = false;
+											break;
+										}
+										else
+										{
+											showreservation();
+											break;
+										}
+									}
+								}
+
+							}
+							else if (showdata[b].startdate.month != showdata[choice - 1].startdate.month && showdata[b].startdate.year == showdata[choice - 1].startdate.year)
+							{
+								each_showstdate = showdata[b].startdate.day + (showdata[b].startdate.month * 30);
+								each_showenddate = showdata[b].enddate.day + (showdata[b].enddate.month * 30);
+								if (tobereserveddate >= each_showstdate && tobereserveddate <= each_showenddate)
+								{
+									if (showdata[b].time == showdata[choice - 1].time)
+									{
+										cout << "You already have a reserved show at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : ";
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkshows = false;
+											break;
+										}
+										else
+										{
+											showreservation();
+											break;
+										}
+									}
+								}
+							}
+							else if (showdata[b].startdate.year != showdata[choice - 1].startdate.year)
+							{
+								tobereserveddate = showdata[choice - 1].startdate.day + (showdata[choice - 1].startdate.month * 30) + (showdata[choice - 1].startdate.year * 365);
+								each_showstdate = showdata[b].startdate.day + (showdata[b].startdate.month * 30) + (showdata[b].startdate.year * 365);
+								each_showenddate = showdata[b].enddate.day + (showdata[b].enddate.month * 30) + (showdata[b].enddate.year * 365);
+								if (tobereserveddate >= each_showstdate && tobereserveddate <= each_showenddate)
+								{
+									if (showdata[b].time == showdata[choice - 1].time)
+									{
+										cout << "You already have a reserved show at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : ";
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkshows = false;
+											break;
+										}
+										else
+										{
+											showreservation();
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				for (int j = 0; j < eventcnt; j++)
+				{
+					for (int k = 0; k < eventcnt; k++)
+					{
+						if (user.eventid[j] == eventdata[k].id)
+						{
+							if (eventdata[k].startdate.day == showdata[choice - 1].startdate.day && eventdata[k].startdate.month == showdata[choice - 1].startdate.month && eventdata[k].startdate.year == showdata[choice - 1].startdate.year)
+							{
+								if (eventdata[k].time == showdata[choice - 1].time)
+								{
+									cout << "You already have a reserved event at the same time slot." << endl;
+									cout << "Do you want to confirm reservation (y/n)? : ";
+									cin >> confirm;
+									if (confirm == 'y' || confirm == 'Y')
+									{
+										checkshows = false;
+										break;
+									}
+									else
+									{
+										showreservation();
+										break;
+									}
+								}
+							}
+							else if (eventdata[k].startdate.day != showdata[choice - 1].startdate.day && eventdata[k].startdate.month == showdata[choice - 1].startdate.month && eventdata[k].startdate.year == showdata[choice - 1].startdate.year)
+							{
+								each_eventstdate = eventdata[k].startdate.day + (eventdata[k].startdate.month * 30);
+								each_eventenddate = eventdata[k].enddate.day + (eventdata[k].enddate.month * 30);
+								if (tobereserveddate >= each_eventstdate && tobereserveddate <= each_eventenddate)
+								{
+									if (eventdata[k].time == showdata[choice - 1].time)
+									{
+										cout << "You already have a reserved event at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : ";
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkshows = false;
+											break;
+										}
+										else
+										{
+											showreservation();
+											break;
+										}
+									}
+								}
+
+							}
+							else if (eventdata[k].startdate.month != showdata[choice - 1].startdate.month && eventdata[k].startdate.year == showdata[choice - 1].startdate.year)
+							{
+								each_eventstdate = eventdata[k].startdate.day + (eventdata[k].startdate.month * 30);
+								each_eventenddate = eventdata[k].enddate.day + (eventdata[k].enddate.month * 30);
+								tobereserveddate = showdata[choice - 1].startdate.day + (showdata[choice - 1].startdate.month * 30);
+								if (tobereserveddate >= each_eventstdate && tobereserveddate <= each_eventenddate)
+								{
+									if (eventdata[k].time == showdata[choice - 1].time)
+									{
+										cout << "You already have a reserved event at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : ";
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkshows = false;
+											break;
+										}
+										else
+										{
+											showreservation();
+											break;
+										}
+									}
+								}
+							}
+							else if (eventdata[k].startdate.year != showdata[choice - 1].startdate.year)
+							{
+								tobereserveddate = showdata[choice - 1].startdate.day + (showdata[choice - 1].startdate.month * 30) + (showdata[choice - 1].startdate.year * 365);
+								each_eventstdate = eventdata[k].startdate.day + (eventdata[k].startdate.month * 30) + (eventdata[k].startdate.year * 365);
+								each_eventenddate = eventdata[k].enddate.day + (eventdata[k].enddate.month * 30) + (eventdata[k].enddate.year * 365);
+								if (tobereserveddate >= each_eventstdate && tobereserveddate <= each_eventenddate)
+								{
+									if (eventdata[k].time == showdata[choice - 1].time)
+									{
+										cout << "You already have a reserved event at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : ";
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkshows = false;
+											break;
+										}
+										else
+										{
+											showreservation();
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+		}
+
+	}
+	if (checkshows == false)
+	{
+		user.showid[userid] = showdata[choice - 1].id;
+		showdata[choice - 1].showseats--;
+		cout << "Reservation done successfully!" << endl;
+		cout << user.showid[userid] << endl;
+		system("pause");
+
+	}
+	else
+	{
+		cout << "Error!Retry." << endl;
+		showreservation();
+	}
+	cout << "Do you want to reserve another show hall (y/n)? : ";
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		showreservation();
+	}
+	else
+	{
+		menu_user();
+	}
+}
+void eventreservation()
+{
+	system("cls");
+	int resid = 0;
+	char confirm;
+	bool checkevents = false;
+	bool alreadyreserved = false;
+	int eventcnt = 0;
+	int showcnt = 0;
+	int userid = 0;
+	for (int j = 0; !eventdata[j].name.empty(); j++)
+	{
+		eventcnt++;
+	}
+	for (int f = 0; !showdata[f].name.empty(); f++)
+	{
+		showcnt++;
+	}
+	for (int i = 0; !user.eventid[i].empty(); i++)
+	{
+		userid++;
+	}
+	cout << "Select an Event to reserve : " << endl;
+	int index = 1;
+	for (int i = 0; i < eventcnt; i++)
+	{
+		cout << index << '.';
+		index++;
+		cout << eventdata[i].name << endl;
+	}
+	int choice;
+	cin >> choice;
+	int tobereserveddate = eventdata[choice - 1].startdate.day + (eventdata[choice - 1].startdate.month * 30);
+	int each_eventstdate, each_eventenddate, each_showstdate, each_showenddate;
+	if (cin.fail())
+	{
+		cout << "Error,Invalid input." << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		eventreservation();
+	}
+	else
+	{
+		if (choice <= index && choice > 0)
+
+		{
+			for (int h = 0; h < eventcnt; h++)
+			{
+				if (user.eventid[h] == eventdata[choice - 1].id)
+				{
+					cout << " Event is already reserved." << endl;
+					system("pause");
+					checkevents = true;
+					alreadyreserved = true;
+					break;
+				}
+			}
+			if (alreadyreserved == false)
+			{
+				for (int j = 0; j < eventcnt; j++)
+				{
+					for (int k = 0; k < eventcnt; k++)
+					{
+						if (user.eventid[j] == eventdata[k].id)
+						{
+							if (eventdata[k].startdate.day == eventdata[choice - 1].startdate.day && eventdata[k].startdate.month == eventdata[choice - 1].startdate.month && eventdata[k].startdate.year == eventdata[choice - 1].startdate.year)
+							{
+								if (eventdata[k].time == eventdata[choice - 1].time)
+								{
+									cout << "You already have a reserved event at the same time slot." << endl;
+									cout << "Do you want to confirm reservation (y/n)? : " << endl;
+									cin >> confirm;
+									if (confirm == 'y' || confirm == 'Y')
+									{
+										checkevents = false;
+										break;
+									}
+									else
+									{
+										eventreservation();
+										break;
+									}
+								}
+							}
+							else if (eventdata[k].startdate.day != eventdata[choice - 1].startdate.day && eventdata[k].startdate.month == eventdata[choice - 1].startdate.month && eventdata[k].startdate.year == eventdata[choice - 1].startdate.year)
+							{
+								each_eventstdate = eventdata[k].startdate.day + (eventdata[k].startdate.month * 30);
+								each_eventenddate = eventdata[k].enddate.day + (eventdata[k].enddate.month * 30);
+								if (tobereserveddate >= each_eventstdate && tobereserveddate <= each_eventenddate)
+								{
+									if (eventdata[k].time == eventdata[choice - 1].time)
+									{
+										cout << "You already have a reserved event at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : " << endl;
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkevents = false;
+											break;
+										}
+										else
+										{
+											eventreservation();
+											break;
+										}
+									}
+								}
+
+							}
+							else if (eventdata[k].startdate.month != eventdata[choice - 1].startdate.month && eventdata[k].startdate.year == eventdata[choice - 1].startdate.year)
+							{
+								each_eventstdate = eventdata[k].startdate.day + (eventdata[k].startdate.month * 30);
+								each_eventenddate = eventdata[k].enddate.day + (eventdata[k].enddate.month * 30);
+								if (tobereserveddate >= each_eventstdate && tobereserveddate <= each_eventenddate)
+								{
+									if (eventdata[k].time == eventdata[choice - 1].time)
+									{
+										cout << "You already have a reserved event at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : " << endl;
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkevents = false;
+											break;
+										}
+										else
+										{
+											eventreservation();
+											break;
+										}
+									}
+								}
+							}
+							else if (eventdata[k].startdate.year != eventdata[choice - 1].startdate.year)
+							{
+								tobereserveddate = eventdata[choice - 1].startdate.day + (eventdata[choice - 1].startdate.month * 30) + (eventdata[choice - 1].startdate.year * 365);
+								each_eventstdate = eventdata[k].startdate.day + (eventdata[k].startdate.month * 30) + (eventdata[k].startdate.year * 365);
+								each_eventenddate = eventdata[k].enddate.day + (eventdata[k].enddate.month * 30) + (eventdata[k].enddate.year * 365);
+								if (tobereserveddate >= each_eventstdate && tobereserveddate <= each_eventenddate)
+								{
+									if (eventdata[k].time == eventdata[choice - 1].time)
+									{
+										cout << "You already have a reserved event at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : " << endl;
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkevents = false;
+											break;
+										}
+										else
+										{
+											eventreservation();
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				for (int a = 0; a < showcnt; a++)
+				{
+					for (int b = 0; b < showcnt; b++)
+					{
+						if (user.showid[a] == showdata[b].id)
+						{
+							if (showdata[b].startdate.day == eventdata[choice - 1].startdate.day && showdata[b].startdate.month == eventdata[choice - 1].startdate.month && showdata[b].startdate.year == eventdata[choice - 1].startdate.year)
+							{
+								if (showdata[b].time == eventdata[choice - 1].time)
+								{
+									cout << "You already have a reserved Show at the same time slot." << endl;
+									cout << "Do you want to confirm reservation (y/n)? : " << endl;
+									cin >> confirm;
+									if (confirm == 'y' || confirm == 'Y')
+									{
+										checkevents = false;
+										break;
+									}
+									else
+									{
+										eventreservation();
+										break;
+									}
+								}
+							}
+							else if (showdata[b].startdate.day != eventdata[choice - 1].startdate.day && showdata[b].startdate.month == eventdata[choice - 1].startdate.month && showdata[b].startdate.year == eventdata[choice - 1].startdate.year)
+							{
+								each_showstdate = showdata[b].startdate.day + (showdata[b].startdate.month * 30);
+								each_showenddate = showdata[b].enddate.day + (showdata[b].enddate.month * 30);
+								if (tobereserveddate >= each_showstdate && tobereserveddate <= each_showenddate)
+								{
+									if (showdata[b].time == eventdata[choice - 1].time)
+									{
+										cout << "You already have a reserved Show at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : " << endl;
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkevents = false;
+											break;
+										}
+										else
+										{
+											eventreservation();
+											break;
+										}
+									}
+								}
+
+							}
+							else if (showdata[b].startdate.month != eventdata[choice - 1].startdate.month && showdata[b].startdate.year == eventdata[choice - 1].startdate.year)
+							{
+								each_showstdate = showdata[b].startdate.day + (showdata[b].startdate.month * 30);
+								each_showenddate = showdata[b].enddate.day + (showdata[b].enddate.month * 30);
+								if (tobereserveddate >= each_showstdate && tobereserveddate <= each_showenddate)
+								{
+									if (showdata[b].time == eventdata[choice - 1].time)
+									{
+										cout << "You already have a reserved Show at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : " << endl;
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkevents = false;
+											break;
+										}
+										else
+										{
+											eventreservation();
+											break;
+										}
+									}
+								}
+							}
+							else if (showdata[b].startdate.year != eventdata[choice - 1].startdate.year)
+							{
+								tobereserveddate = eventdata[choice - 1].startdate.day + (eventdata[choice - 1].startdate.month * 30) + (eventdata[choice - 1].startdate.year * 365);
+								each_showstdate = showdata[b].startdate.day + (showdata[b].startdate.month * 30) + (showdata[b].startdate.year * 365);
+								each_showenddate = showdata[b].enddate.day + (showdata[b].enddate.month * 30) + (showdata[b].enddate.year * 365);
+								if (tobereserveddate >= each_showstdate && tobereserveddate <= each_showenddate)
+								{
+									if (showdata[b].time == eventdata[choice - 1].time)
+									{
+										cout << "You already have a reserved Show at the same time slot." << endl;
+										cout << "Do you want to confirm reservation (y/n)? : " << endl;
+										cin >> confirm;
+										if (confirm == 'y' || confirm == 'Y')
+										{
+											checkevents = false;
+											break;
+										}
+										else
+										{
+											eventreservation();
+											break;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+
+		}
+	}
+	if (checkevents == false)
+	{
+		user.eventid[userid] = eventdata[choice - 1].id;
+		cout << "Reservation done successfully!" << endl;
+
+	}
+
+	else
+	{
+		cout << "Error!Retry." << endl;
+		eventreservation();
+		system("pause");
+	}
+	cout << "Do you want to reserve another event (y/n)? : ";
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		eventreservation();
+	}
+	else
+	{
+		menu_user();
+	}
+}
+void canceleventreservation()
+{
+	system("cls");
+	int count1 = 0, count2 = 0;               // the actual elements of array
+	for (int i = 0; !user.eventid[i].empty(); i++)     // identifay the eventid  of user
+	{
+		count1++;
+	}
+	for (int j = 0; !eventdata[j].id.empty(); j++)       // identifay  the eventid of events 
+	{
+
+		count2++;
+	}
+	cout << "Current reserved Events : " << endl << endl;
+	for (int i = 0; i < count1; i++)
+	{
+		for (int j = 0; j < count2; j++)
+		{
+			if (user.eventid[i] == eventdata[j].id)
+			{
+				cout << i + 1 << "." << eventdata[j].name << endl;
+			}
+		}
+	}
+	int choice;
+	cout << endl << "Event selection : ";
+	cin >> choice;
+	if (cin.fail())
+	{
+		cout << "Error,Invalid input" << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		canceleventreservation();
+	}
+
+	for (int i = choice - 1; !user.eventid[i].empty(); i++)
+	{
+		user.eventid[i] = user.eventid[i + 1];
+	}
+	cout << "cancel successful" << endl;
+	cout << "*********************************" << endl;
+	cout << "current reserved events : " << endl << endl;
+	for (int i = 0; i < count1; i++)
+	{
+		for (int j = 0; j < count2; j++)
+		{
+			if (user.eventid[i] == eventdata[j].id)
+			{
+				cout << i + 1 << "." << eventdata[j].name << endl;
+				break;
+			}
+		}
+	}
+	cout << "Do you want cancel anothr event's reservation hall (y/n)? : ";
+	char confirm;
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		canceleventreservation;
+	}
+	else
+	{
+		menu_user();
+	}
+}
+void cancelshowreservation() {
+	system("cls");
+	int counter1 = 0, counter2 = 0;    // the actual  array elemnts 
+	for (int i = 0; !user.showid[i].empty(); i++)
+	{
+		counter1++;
+	}
+	for (int j = 0; !showdata[j].id.empty(); j++)      // the actual elements of  show id 
+	{
+		counter2++;
+	}
+	cout << "Current resserved Shows : " << endl << endl;
+	for (int i = 0; i < counter1; i++)               // show the reserved shows 
+	{
+		for (int j = 0; j < counter2; j++)
+		{
+			if (user.showid[i] == showdata[j].id)
+			{
+				cout << i + 1 << "." << showdata[j].name << endl;
+				break;
+			}
+		}
+	}
+	cout << " Show selection : ";
+	int choice;
+	cin >> choice;
+	if (cin.fail())
+	{
+		cout << "Error,Invalid input" << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		cancelshowreservation();
+	}
+	for (int j = 0; !user.showid[j].empty(); j++)                 // increase num  of show seat 
+	{
+		if (user.showid[choice - 1] == showdata[j].id)
+		{
+			showdata[j].showseats++;
+		}
+	}
+	for (int i = choice - 1; !user.showid[i].empty(); i++)     //  del the showid 
+	{
+		user.showid[i] = user.showid[i + 1];
+	}
+	cout << "cancel successful" << endl;
+	cout << "*********************************" << endl;
+	cout << "current reserved shows : " << endl << endl;
+	for (int i = 0; i < counter1; i++)               // show the reserved shows 
+	{
+		for (int j = 0; j < counter2; j++)
+		{
+			if (user.showid[i] == showdata[j].id)
+			{
+				cout << i + 1 << "." << showdata[j].name << endl;
+				break;
+			}
+		}
+	}
+	cout << "Do you want cancel anothr event's reservation hall (y/n)? : ";
+	char confirm;
+	cin >> confirm;
+	if (confirm == 'y' || confirm == 'Y')
+	{
+		cancelshowreservation;
+	}
+	else
+	{
+		menu_user();
+	}
+
+}
+void searchshowhall() {
+	system("cls");
+	cin.ignore();
+	string showhall;
+	bool notfound = true;
+	cout << " Enter Show name to find Hall :";
+	getline(cin, showhall);
+
+	for (int i = 0; !showdata[i].name.empty(); i++)
+	{
+		if (showhall == showdata[i].name)
+		{
+			cout << "The Show takes place in :" << showdata[i].showinhall << endl;
+			notfound = false;
+			break;
+		}
+	}
+
+	if (notfound)
+	{
+		cout << "No show with such name found." << endl;
+		system("pause");
+		searchshowhall();
+	}
+	system("pause");
+	menu_user();
+}
+void searcheventhall()
+{
+	system("cls");
+	cin.ignore();
+	string eventhall;
+	bool nfound = true;
+	cout << " Enter Event name to find Hall : ";
+	getline(cin, eventhall);
+	for (int i = 0; !eventdata[i].name.empty(); i++)
+	{
+		if (eventhall == eventdata[i].name)
+		{
+			cout << "The Event takes place at :" << eventdata[i].evinhall << endl;
+			nfound = false;
+			break;
+		}
+	}
+	if (nfound)
+	{
+		cout << "No Event with such name is found." << endl;
+		system("pause");
+		searcheventhall();
+	}
+	system("pause");
+	if (user.username == "admin")
+	{
+		menu_admin();
+	}
+	else
+	{
+		menu_user();
+	}
+}
+void searchbyhall()
+{
+	system("cls");
+	cin.ignore();
+	string hallname;
+	int index = 1;
+	bool found = false;
+	cout << "Enter Hall name :";
+	getline(cin, hallname);
+	for (int i = 0; !halldata[i].name.empty(); i++)
+	{
+		if (hallname == halldata[i].name)
+		{
+			cout << "Hall name :" << halldata[i].name << endl;
+			cout << "Hall location : " << endl << endl << "1) Floor number : " << halldata[i].place.floor << endl;
+			cout << "2) Room : " << halldata[i].place.room << endl;
+			cout << "Number of seats :" << halldata[i].numberofseats << endl;
+			cout << "list of events and shows running in " << halldata[i].name << " : " << endl << endl;
+			for (int j = 0; !halldata[i].events_shows[j].empty(); j++)
+			{
+				cout << index << "." << halldata[i].events_shows[j] << endl;
+				index++;
+			}
+			found = true;
+		}
+	}
+	if (found == false)
+	{
+		cout << "No hall found with such name." << endl;
+		system("pause");
+		searchbyhall();
+	}
+	system("pause");
+	menu_admin();
+}
+void timeline()
+{
+	system("cls");
+	int cnt = 0;
+	cout << "Enter date to show running Shows (dd/mm/yyyy) : ";
+	int userday, usermonth, useryear, usertotal, endtotal, starttotal;
+	cin >> userday >> usermonth >> useryear;
+	cout << endl;
+
+	for (int i = 0; !showdata[i].name.empty(); i++)
+	{
+		if (showdata[i].startdate.day == userday && usermonth == showdata[i].startdate.month && showdata[i].startdate.year == useryear)
+		{
+			if (showdata[i].showseats < 100)
+			{
+				cout << "Show Name :" << showdata[i].name << endl;
+				cout << "Show Location : " << showdata[i].showinhall << endl;
+				cout << "Show Time slot : From " << showdata[i].time << endl;
+				cout << "********************************" << endl;
+				cnt++;
+			}
+		}
+
+		else if (showdata[i].startdate.day != userday && showdata[i].startdate.year == useryear && showdata[i].startdate.month == usermonth && showdata[i].startdate.month == showdata[i].enddate.month)
+		{
+			int starttotal = showdata[i].startdate.day + (showdata[i].startdate.month * 30);
+			int endtotal = showdata[i].enddate.day + (showdata[i].enddate.month * 30);
+			int usertotal = userday + (usermonth * 30);
+
+			if (usertotal >= starttotal && usertotal <= endtotal)
+			{
+				if (showdata[i].showseats < 100)
+				{
+					cout << "Show Name :" << showdata[i].name << endl;
+					cout << "Show Location : " << showdata[i].showinhall << endl;
+					cout << "Show Time slot : From " << showdata[i].time << endl;
+					cout << "********************************" << endl;
+					cnt++;
+				}
+			}
+
+
+
+		}
+
+		else if (showdata[i].startdate.month != showdata[i].enddate.month && showdata[i].startdate.year == showdata[i].enddate.year)
+		{
+			int starttotal = showdata[i].startdate.day + (showdata[i].startdate.month * 30);
+			int endtotal = showdata[i].enddate.day + (showdata[i].enddate.month * 30);
+			int usertotal = userday + (usermonth * 30);
+
+
+			if (usertotal >= starttotal && usertotal <= endtotal)
+			{
+				if (showdata[i].showseats < 100)
+				{
+					cout << "Show Name :" << showdata[i].name << endl;
+					cout << "Show Location : " << showdata[i].showinhall << endl;
+					cout << "Show Time slot : From " << showdata[i].time << endl;
+					cout << "********************************" << endl;
+					cnt++;
+				}
+			}
+
+
+		}
+
+
+		else if (showdata[i].startdate.year != showdata[i].enddate.year)
+		{
+			starttotal = showdata[i].startdate.day + (showdata[i].startdate.month * 30) + (showdata[i].startdate.year * 365);
+			endtotal = showdata[i].enddate.day + (showdata[i].enddate.month * 30) + (showdata[i].enddate.year * 365);
+			usertotal = userday + (usermonth * 30) + (useryear * 365);
+
+			if (usertotal >= starttotal && usertotal <= endtotal)
+			{
+				if (showdata[i].showseats < 100)
+				{
+					cout << "Show Name :" << showdata[i].name << endl;
+					cout << "Show Location : " << showdata[i].showinhall << endl;
+					cout << "Show Time slot : From " << showdata[i].time << endl;
+					cout << "********************************" << endl;
+					cnt++;
+				}
+			}
+
+		}
+
+	}
+	if (cnt < 1) {
+		cout << "No Shows found." << endl;
+	}
+	system("pause");
+	if (user.username == "admin") {
+		menu_admin();
+	}
+	else
+	{
+		menu_user();
+	}
+}
+int main() {
+	retrive_data();
+	main_menu();
+	system("pause");
+	return 0;
+}
+void main_menu() {
+	system("cls");
+	cout << "Welcome to ASU hall reservation system, What would you like to do?" << endl << endl;
+	cout << "1.Login." << endl;
+	cout << "2.Register." << endl;
+	cout << "3.Exit." << endl << endl;
+	int choice;
+	cout << "Enter your choice : ";
+	cin >> choice;
+	switch (choice)
+	{
+	case 1:
+		login();
+		break;
+	case 2:
+		registerme();
+		break;
+	case 3:
+		Exit();
+		break;
+	default:
+		cout << "Error,invalid input." << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		main_menu();
+		break;
+	}
+}
+void menu_user() {
+	system("cls");
+	cout << "Welcome " << user.username << " ,What would you like to do?" << endl << endl;
+	cout << "1.Show all shows in a certain timeline." << endl;
+	cout << "2.Show upcoming Events after a certain date." << endl;
+	cout << "3.Create an Event." << endl;
+	cout << "4.Create a Show." << endl;
+	cout << "5.Reserve an Event." << endl;
+	cout << "6.Reserve a Show." << endl;
+	cout << "7.Cancel Event reservation." << endl;
+	cout << "8.Cancel Show reservation." << endl;
+	cout << "9.show event in which hall." << endl;
+	cout << "10.show 'show' in which hall." << endl;
+	cout << "11.logout." << endl;
+	cout << "12.Exit" << endl << endl;
+	int choice;
+	cout << "Enter your choice : ";
+	cin >> choice;
+	switch (choice)
+	{
+	case 1:
+		timeline();
+		break;
+	case 2:
+		upcomingevents();
+		break;
+	case 3:
+		createevent();
+		break;
+	case 4:
+		createshow();
+		break;
+	case 5:
+		eventreservation();
+		break;
+	case 6:
+		showreservation();
+		break;
+	case 7:
+		canceleventreservation();
+		break;
+	case 8:
+		cancelshowreservation();
+		break;
+	case 9:
+		searcheventhall();
+		break;
+	case 10:
+		searchshowhall();
+		break;
+	case 11:
+		collect_id();
+		main_menu();
+		break;
+	case 12:
+		Exit();
+	default:
+		cout << "Error,invalid input." << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		menu_user();
+		break;
+	}
+}
+void menu_admin()
+{
+	system("cls");
+	cout << "Welcome Admin,What would you like to do?" << endl << endl;
+	cout << "1.Add a hall." << endl;
+	cout << "2.Delete a hall." << endl;
+	cout << "3.show data of a certain hall." << endl;
+	cout << "4.Show all shows in a certain timeline." << endl;
+	cout << "5.Show upcoming Events after a certain date." << endl;
+	cout << "6.show event in which hall." << endl;
+	cout << "7.show 'show' in which hall." << endl;
+	cout << "8.logout." << endl;
+	cout << "9.Exit." << endl << endl;
+	int choice;
+	cout << "Enter your choice : ";
+	cin >> choice;
+	switch (choice)
+	{
+	case 1:
+		addnewhall();
+		break;
+	case 2:
+		removehall();
+		break;
+	case 3:
+		searchbyhall();
+		break;
+	case 4:
+		timeline();
+		break;
+	case 5:
+		upcomingevents();
+		break;
+	case 6:
+		searcheventhall();
+		break;
+	case 7:
+		searchshowhall();
+		break;
+	case 8:
+		main_menu();
+		break;
+	case 9:
+		Exit();
+		break;
+	default:
+		cout << "Error,invalid input." << endl;
+		cin.clear();
+		cin.ignore();
+		system("pause");
+		menu_admin();
+		break;
+	}
+}
