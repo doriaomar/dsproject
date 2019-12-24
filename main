@@ -1,0 +1,129 @@
+#include <iostream>
+#include <string>
+#include "linkedQueue.h"
+#include <vector>
+#include<fstream>
+using namespace std;
+int main()
+{
+	string name;
+	Mother M;
+	int choise;
+	char  choice;
+	char lo;
+	do { // do while -> logout & exit
+		cout << "       * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << "       *                                                     *" << endl;
+		cout << "       *                                                     *" << endl;
+		cout << "       *    Mother is Friendly, is Home, is Life........     *" << endl;
+		cout << "       *                                                     *" << endl;
+		cout << "       *                                                     *" << endl;
+		cout << "       * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << endl;
+		cout << endl;
+		cout << endl;
+		cout << endl;
+
+		do { // do while for n regist or y login 
+			cout << "\tDo You Have An Account (Y/N) : ";
+			cin >> choice;
+			switch (choice) {
+			case 'Y':
+			case 'y':
+				name = M.loginfn();
+				break;
+			case 'N':
+			case 'n':
+				name = M.registration();
+				break;
+			default:
+				cout << "Wrong Entry !!" << endl;
+				break;
+			}
+		} while (choice != 'Y' && choice != 'y' && choice != 'N' && choice != 'n');
+
+		M.L.ReadData();
+
+		do {
+
+			cout << endl;
+			cout << endl;
+			cout << "*********************************" << endl;
+			cout << " 1-> if You Finsh Your Task " << endl;
+			cout << " 2-> To Display Your List " << endl;
+			cout << " 3-> To  Edit in Your List " << endl;
+			cout << " 4-> To  Move Any Task To Another Day  " << endl;
+			cout << " 0->Stop " << endl;
+			//cout << " 0-> To Stop " << endl;
+			cin >> choise;
+			if (choise != 0) {
+				switch (choise)
+				{
+				case 1:
+					M.L.Update();
+					break;
+				case 2:
+					M.L.Display();
+					break;
+				case 3:
+					M.L.Edit();
+					break;
+				case 4:
+					M.L.MoveTask(name);
+					break;
+				default:
+					break;
+				}
+
+			}
+			else {
+				break;//bt5rgni bra el loop 7ata lw msh m5lsa
+			}
+
+		} while (!M.L.Empty());
+		system("cls");
+		M.Disease(name);
+		M.balance();
+		system("pause");//lma y5rog el message di tzher 7ta lw lsa m5lssh el tasks
+		system("cls");
+		cout << "       * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << "       *                                                                                                                 *" << endl;
+		cout << "       *                                                                                                                 *" << endl;
+		cout << "       *    Being a full-time mother is one of the highest salaried jobs in my field, since the payment is pure love.    *" << endl;
+		cout << "       *                                                                                                                 *" << endl;
+		cout << "       *                                                                                                                 *" << endl;
+		cout << "       * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *" << endl;
+		cout << endl;
+		cout << endl;
+		cout << endl;
+		cout << endl;
+		cout << "Log out(Y) Exit(E): ";
+		cin >> lo;
+		if (lo == 'y' || lo == 'Y') {
+			cout << " ########################" << endl;
+			cout << " GOOD BYE , Mommy  " << endl;
+			cout << " You Do Your Best Today" << endl;
+			cout << " ########################" << endl;
+
+			M.L.clear();
+			continue;
+		}
+		else if (lo == 'E' || lo == 'e') {
+			break;
+		}
+		else {
+			while (true) {//lw 7aga d5lt ghalt ysl7ha w y break
+				cout << "Wrong Entry...Try Again!!";
+				cin >> lo;
+				if (lo == 'y' || lo == 'Y') {
+					break;
+				}
+				else if (lo == 'e' || lo == 'E') {
+					break;
+				}
+			}
+		}
+	} while (lo == 'y' || lo == 'Y');
+	system("pause");
+	return 0;
+}
